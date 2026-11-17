@@ -1,0 +1,14 @@
+# Configuração local do editor e do Claude Code (tem caminhos desta máquina)
+.claude/
+
+# Dependências e arquivos de teste locais (o projeto não tem dependências)
+node_modules/
+
+# Backups do banco nunca vão pro repositório, nem criptografados
+backup*.sql
+backup*.sql.gz
+*.gpg
+
+# Sistema
+.DS_Store
+Thumbs.db

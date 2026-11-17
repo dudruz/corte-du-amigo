@@ -1,0 +1,47 @@
+/* Corte DÚ Amigo · tokens de design
+   Trocar aqui quando chegar a identidade oficial. Nada de cor solta nos componentes. */
+:root {
+  --fundo: #F3EEE5;
+  --superficie: #FFFFFF;
+  --superficie-2: #FBF8F3;
+  --bege: #EDE6DA;
+  --tinta: #1A1714;
+  --tinta-2: #2A2621;
+  --tinta-suave: #4A433C;
+  --muted: #6B635A;
+  --muted-escuro: #C9C0B4;
+  --linha: #DDD5C8;
+  --linha-2: #E3DBCF;
+  --linha-3: #EDE6DA;
+  --linha-forte: #CFC5B5;
+
+  --sobre-escuro: #FFFFFF;     /* texto e ícone em fundo escuro ou colorido */
+  --sobre-escuro-2: #E5DED4;   /* rótulo em fundo escuro */
+  --sobre-escuro-3: #A89F94;   /* texto de apoio em fundo escuro */
+  --preto: #000000;
+  --desabilitado: #8A8178;
+  --listra: #E6DED2;           /* listra do bloqueio na agenda */
+  --sombra: rgba(26, 23, 20, .25);
+
+  --vermelho: #B3261E;
+  --vermelho-hover: #8E1D17;
+  --azul: #1E3557;
+  --azul-claro: #D5DDEA;
+  --azul-medio: #33507A;
+
+  --ok: #1F6B3A;      --ok-bg: #E3F1E6;
+  --alerta: #7A4100;  --alerta-bg: #FBEBD3;  --alerta-forte: #5C3300;
+  --erro: #9E2019;    --erro-bg: #F8E1DE;
+  --info: #1E3557;    --info-bg: #DDE5F0;
+  --zap-bg: #DCF2D9;  --zap: #10240F;
+
+  --fonte-titulo: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --fonte: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --raio-s: 10px;
+  --raio: 14px;
+  --raio-l: 16px;
+  --raio-pill: 999px;
+
+  --poste: repeating-linear-gradient(135deg, var(--vermelho) 0 14px, var(--fundo) 14px 28px, var(--azul) 28px 42px, var(--fundo) 42px 56px);
+}

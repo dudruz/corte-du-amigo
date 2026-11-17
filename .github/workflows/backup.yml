@@ -1,0 +1,48 @@
+# Backup semanal do banco do Supabase, criptografado.
+# O repositório é público: o arquivo só sai daqui criptografado com a senha BACKUP_SENHA.
+# Configuração (segredos SUPABASE_DB_URL e BACKUP_SENHA): ver LEIA-ME, passo 5.
+name: Backup semanal do banco
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # segunda, 9h UTC = 6h em Brasília (barbearia fechada)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar o pg_dump 17
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Copiar o banco e criptografar
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_SENHA: ${{ secrets.BACKUP_SENHA }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_DB_URL}" ] || [ -z "${BACKUP_SENHA}" ]; then
+            echo "Faltam os segredos SUPABASE_DB_URL e BACKUP_SENHA (ver LEIA-ME, passo 5)."
+            exit 1
+          fi
+          arquivo="backup-$(date -u +%Y-%m-%d).sql.gz"
+          /usr/lib/postgresql/17/bin/pg_dump "${SUPABASE_DB_URL}" --schema=public --no-owner --no-privileges | gzip > "${arquivo}"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "${BACKUP_SENHA}" \
+              --symmetric --cipher-algo AES256 -o "${arquivo}.gpg" "${arquivo}"
+          rm -f "${arquivo}"
+          ls -lh backup-*.gpg
+
+      - name: Guardar o arquivo por 90 dias
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-banco
+          path: backup-*.sql.gz.gpg
+          retention-days: 90
+          if-no-files-found: error

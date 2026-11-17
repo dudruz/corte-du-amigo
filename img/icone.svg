@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><clipPath id="c"><rect width="512" height="512" rx="112"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect width="512" height="512" fill="#1A1714"/>
+    <g transform="rotate(-45 256 256)">
+      <rect x="-200" y="0" width="70" height="512" fill="#B3261E"/>
+      <rect x="-60" y="0" width="70" height="512" fill="#1E3557"/>
+    </g>
+    <text x="256" y="300" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="190" fill="#F3EEE5">DÚ</text>
+  </g>
+</svg>

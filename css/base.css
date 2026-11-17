@@ -1,0 +1,69 @@
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font-family: var(--fonte);
+  font-size: 15px;
+  line-height: 1.45;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+a { color: var(--vermelho); }
+a:hover { color: var(--vermelho-hover); }
+:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Estrutura de tela: mobile-first, centralizada em telas grandes */
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--fundo);
+}
+@media (min-width: 520px) { .app { box-shadow: 0 0 0 1px var(--linha); } }
+
+.poste { height: 8px; flex-shrink: 0; background: var(--poste); }
+
+.topo { padding: 18px 20px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.topo--escuro { background: var(--tinta); color: var(--sobre-escuro); padding: 18px 20px; flex-direction: column; align-items: stretch; gap: 14px; }
+.topo-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.topo-textos { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.marca { font-family: var(--fonte-titulo); font-size: 24px; letter-spacing: .03em; line-height: 1; }
+.sub { font-size: 13px; color: var(--muted); }
+.topo--escuro .sub { color: var(--muted-escuro); }
+.titulo-xl { font-family: var(--fonte-titulo); font-weight: 400; font-size: 46px; line-height: 1.02; text-transform: uppercase; }
+.titulo { font-family: var(--fonte-titulo); font-weight: 400; font-size: 30px; line-height: 1; text-transform: uppercase; }
+.titulo-m { font-family: var(--fonte-titulo); font-weight: 400; font-size: 22px; line-height: 1.1; text-transform: uppercase; }
+.secao-titulo { font-size: 15px; font-weight: 700; }
+.secao-cabeca { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+
+.conteudo { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.secao { display: flex; flex-direction: column; gap: 10px; }
+
+.rodape {
+  position: sticky; bottom: 0;
+  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  background: var(--superficie);
+  border-top: 1px solid var(--linha);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.rodape-linha { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Foco visível também em fundo escuro ou colorido (o azul some ali) */
+.topo--escuro :focus-visible, .tela-escura :focus-visible, .card--azul :focus-visible,
+.card--escuro :focus-visible, .metrica--escura :focus-visible { outline-color: var(--sobre-escuro); }
+
+/* Tela escura (login) */
+.tela-escura label, .tela-escura .rotulo { color: var(--sobre-escuro-2); }
+.tela-escura .ajuda { color: var(--sobre-escuro-3); }
