@@ -17,9 +17,10 @@ O passo a passo abaixo é pra colocar no ar do zero. Leva uns 30 minutos.
    - `004_dados_iniciais.sql`: Duim, serviços, horários e formas de pagamento. **Os preços são de exemplo.**
    - `006_correcoes_revisao.sql`: correções de segurança e regras.
    - `007_gestao.sql`: planos, clientes, painel do mês, comissão, Pix e logins da equipe.
+   - `008_seguranca_funcoes.sql`: fecha as funções auxiliares pra quem chama pela API.
 3. Recomendado: em **Database › Extensions**, ative `pg_cron` e rode o `005_tarefas_automaticas.sql` (marca planos vencidos como atrasados toda madrugada). A ordem dele não importa.
 
-> Projeto que já estava no ar com a Fase 1: rode só a `006` (se ainda não rodou) e a `007`, nessa ordem. **Rode o banco antes de publicar o site novo**, senão a Minha área, o Caixa e as telas novas quebram.
+> Projeto que já estava no ar com a Fase 1: rode só a `006` (se ainda não rodou), a `007` e a `008`, nessa ordem. **Rode o banco antes de publicar o site novo**, senão a Minha área, o Caixa e as telas novas quebram.
 
 ## 2. Login do Duim
 

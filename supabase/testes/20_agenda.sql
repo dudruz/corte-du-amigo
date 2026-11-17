@@ -3,18 +3,19 @@
 -- TESTE: pode_barbeiro responde sempre sim ou não, nunca nulo
 do $$
 begin
-  perform teste.igual(pode_barbeiro(teste.duim()), false, 'sem login');
+  perform teste.igual(teste.pode_barbeiro(teste.duim()), false, 'sem login');
   perform teste.como(teste.sem_perfil());
-  perform teste.igual(pode_barbeiro(teste.duim()), false, 'logado sem perfil');
+  perform teste.igual(teste.pode_barbeiro(teste.duim()), false, 'logado sem perfil');
   perform teste.como(teste.barbeiro_sem_agenda());
-  perform teste.igual(pode_barbeiro(teste.duim()), false, 'barbeiro sem barbeiro_id');
-  perform teste.igual(pode_barbeiro(null), false, 'barbeiro sem barbeiro_id, pergunta sem barbeiro');
+  perform teste.igual(teste.pode_barbeiro(teste.duim()), false, 'barbeiro sem barbeiro_id');
+  perform teste.igual(teste.pode_barbeiro(null), false, 'barbeiro sem barbeiro_id, pergunta sem barbeiro');
   perform teste.como(teste.barbeiro());
-  perform teste.igual(pode_barbeiro(teste.zeca()), true, 'barbeiro na própria agenda');
-  perform teste.igual(pode_barbeiro(teste.duim()), false, 'barbeiro na agenda de outro');
-  perform teste.igual(pode_barbeiro(null), false, 'barbeiro, pergunta sem barbeiro');
+  perform teste.igual(teste.pode_barbeiro(teste.zeca()), true, 'barbeiro na própria agenda');
+  perform teste.igual(teste.pode_barbeiro(teste.duim()), false, 'barbeiro na agenda de outro');
+  perform teste.igual(teste.pode_barbeiro(null), false, 'barbeiro, pergunta sem barbeiro');
   perform teste.como(teste.dono());
-  perform teste.igual(pode_barbeiro(teste.zeca()), true, 'dono em qualquer agenda');
+  perform teste.igual(teste.pode_barbeiro(teste.zeca()), true, 'dono em qualquer agenda');
+  perform teste.espera_erro(format('select pode_barbeiro(%L)', teste.zeca()), 'permission denied');
 end $$;
 
 -- TESTE: perfil de barbeiro sem barbeiro_id não entra na agenda de ninguém

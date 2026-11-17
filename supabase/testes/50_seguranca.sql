@@ -105,7 +105,7 @@ begin
     perform teste.igual(v_qtd, 0::bigint, 'linhas visíveis em ' || t);
   end loop;
   perform teste.espera_erro(format('select agenda_do_dia(%L, %L)', teste.duim(), teste.dia(2)), 'Sem permissão');
-  perform teste.espera_erro(format('select * from bloqueios_do_dia(%L, %L)', teste.duim(), teste.dia(2)), 'Acesso só para a equipe');
+  perform teste.espera_erro(format('select * from bloqueios_do_dia(%L, %L)', teste.duim(), teste.dia(2)), 'permission denied');
 end $$;
 
 -- TESTE: barbeiro vê só a própria agenda e nada do financeiro

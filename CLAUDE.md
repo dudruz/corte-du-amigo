@@ -266,7 +266,7 @@ Fase 3, opcional: API oficial do WhatsApp via Edge Function e cron, se o Duim ac
 ## 10. Estado atual (Fases 1 e 2 entregues)
 
 Pronto e testado (48 testes de banco em `supabase/testes/`, telas abertas contra um banco de teste com as migrations reais):
-- **Banco:** migrations 001 a 007.
+- **Banco:** migrations 001 a 008 (aplicadas no Supabase real em 17/11/2026).
   - 006: correções da revisão (acesso só pelo token, grade e horizonte no agendamento, teto por hora, telefone com DDI, bloqueio que cancela só o que bate, plano com `servicos_incluidos`, despesa no dia certo, fechamento desatualizado).
   - 007: planos (`salvar_plano`, `assinar_plano`, `registrar_pagamento_plano`, `cancelar_assinatura`, `planos_painel`), clientes (`clientes_lista`, `ficha_cliente`, `salvar_cliente`), `painel_mes` (faturamento, ticket, formas, semana, comissão), `salvar_horarios` (atômico), logins da equipe (`equipe_logins`, `vincular_login`, `mudar_login_ativo`) e Pix (`pix_chave`, `pix_nome`, `pix_cidade` em `configuracoes`).
 - **Telas do cliente:** `index`, `horario`, `dados`, `agendado`, `minha-area`.
@@ -284,4 +284,6 @@ Diferenças em relação ao plano original:
 - **Login de barbeiro:** o usuário é criado no painel do Supabase (precisa da chave de administrador) e ligado ao barbeiro em Ajustes › Logins da equipe.
 - **Service worker** vale só para `/equipe/` e se desfaz do registro antigo na raiz.
 
-Pendente: rodar a 006 e a 007 no Supabase real e repetir lá o teste de aceite dos dois navegadores (o banco de teste tem uma conexão só).
+  - 008: caminho de busca fixo nas funções simples e auxiliares fechadas pra API (ficam só `eh_dono`, `eh_equipe` e `barbeiro_atual`, que o RLS usa).
+
+Pendente: repetir no Supabase real o teste de aceite dos dois navegadores (o banco de teste tem uma conexão só).

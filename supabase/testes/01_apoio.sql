@@ -126,3 +126,10 @@ begin
     raise exception 'FALHOU: esperava erro com "%" e veio "%" em: %', p_trecho, v_msg, p_sql;
   end if;
 end $$;
+
+-- pode_barbeiro() não é chamável pela API (008); o teste pergunta por aqui, como dono do banco,
+-- com o login do teste ainda valendo (auth.uid() lê o claim).
+create function teste.pode_barbeiro(p_barbeiro uuid) returns boolean
+language sql stable security definer set search_path = public as
+  $$ select pode_barbeiro(p_barbeiro) $$;
+grant execute on function teste.pode_barbeiro(uuid) to public;
