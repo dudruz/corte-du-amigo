@@ -7,6 +7,7 @@ import { mostrarErro, toast } from '../ui/toast.js';
 import { tabbar } from '../ui/tabbar.js';
 import { paraCentavos, centavosParaTexto } from '../lib/formatar.js';
 import { normalizarChavePix, tipoDaChave } from '../lib/pix.js';
+import { FUSO } from '../config.js';
 
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
 const perfil = await exigirEquipe({ somenteDono: true });
@@ -29,18 +30,19 @@ async function ok(q) {
 }
 
 async function carregar() {
-  const [serv, barb, hor, formas, cfg, logins] = await Promise.all([
+  const [serv, barb, hor, formas, cfg, logins, msgs] = await Promise.all([
     sb.from('servicos').select('*').order('ordem'),
     sb.from('barbeiros').select('*').order('nome'),
     sb.from('horarios_trabalho').select('*'),
     sb.from('formas_pagamento').select('*').order('ordem'),
     sb.from('configuracoes').select('*'),
     rpc('equipe_logins'),
+    rpc('mensagens_painel'),
   ]);
   const erro = [serv, barb, hor, formas, cfg].find((r) => r.error);
   if (erro) throw traduzirErro(erro.error);
   d = {
-    servicos: serv.data, barbeiros: barb.data, horarios: hor.data, formas: formas.data, logins,
+    servicos: serv.data, barbeiros: barb.data, horarios: hor.data, formas: formas.data, logins, msgs,
     cfg: Object.fromEntries((cfg.data ?? []).map((c) => [c.chave, c.valor])),
   };
   barbeiroHorario = barbeiroHorario || d.barbeiros[0]?.id || null;
@@ -311,6 +313,70 @@ function secaoLogins() {
   );
 }
 
+const TIPOS_MENSAGEM = /** @type {const} */ ([
+  ['confirmacao', 'Confirmação', 'assim que o cliente marca'],
+  ['lembrete', 'Lembrete', 'antes do horário, pra quem aceitou'],
+  ['horario_mudou', 'Horário mudou', 'atraso ou remarcação'],
+  ['cancelado', 'Horário cancelado', 'agenda fechada ou cancelado pela barbearia'],
+  ['cobranca_plano', 'Cobrança de plano', '1 dia depois de vencer'],
+  ['sumido', 'Chamar sumido', '30+ dias sem vir · mensagem de marketing, a mais cara'],
+]);
+const NOME_TIPO = Object.fromEntries(TIPOS_MENSAGEM.map(([id, nome]) => [id, nome]));
+const STATUS_MENSAGEM = { pendente: 'Na fila', enviando: 'Enviando', enviada: 'Enviada', erro: 'Erro', cancelada: 'Cancelada' };
+const fmtQuando = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+/** Situação da ligação com a Meta, pelo último contato da função de envio. @param {any} s */
+function situacaoWhatsapp(s) {
+  if (!s?.ultimo_contato) return { classe: 'tag', texto: 'Aguardando ativação' };
+  if (s.conectado) return { classe: 'tag tag--ok', texto: 'Conectado' };
+  if (/Aguardando a chave/i.test(s.erro ?? '')) return { classe: 'tag', texto: 'Aguardando a chave da API' };
+  return { classe: 'tag tag--erro', texto: 'Erro de conexão' };
+}
+
+function secaoMensagens() {
+  const m = d.msgs;
+  const c = m.config ?? {};
+  const sit = situacaoWhatsapp(m.status);
+  return h('details', { class: 'painel' },
+    h('summary', null, 'Mensagens automáticas'),
+    h('form', { class: 'painel-corpo', onSubmit: (/** @type {SubmitEvent} */ ev) => salvar(ev, async (fd) => {
+        const config = { ativo: fd.get('ativo') === 'on', ...Object.fromEntries(TIPOS_MENSAGEM.map(([id]) => [id, fd.get(id) === 'on'])) };
+        const site = String(fd.get('site') || '').trim();
+        const horas = inteiro(fd, 'horas', 1);
+        await rpc('salvar_mensagens_automaticas', { p_config: config, p_site_url: site, p_lembrete_horas: horas });
+        d.msgs = await rpc('mensagens_painel');
+      }, 'Mensagens automáticas salvas.') },
+      h('div', { class: 'secao-cabeca', style: 'align-items:center' },
+        h('span', { class: 'rotulo' }, 'WhatsApp oficial'),
+        h('span', { class: sit.classe }, sit.texto)),
+      m.status?.erro && m.status?.ultimo_contato && !m.status?.conectado && !/Aguardando a chave/i.test(m.status.erro)
+        && h('p', { class: 'aviso aviso--erro' }, `Último erro da Meta: ${m.status.erro}`),
+      h('p', { class: 'ajuda' }, 'As mensagens saem sozinhas pela API oficial do WhatsApp, com custo por mensagem cobrado pela Meta. Enquanto a API não for ativada (LEIA-ME, passo 8), nada é enviado e os botões de "Avisar" e "Lembrar" continuam funcionando como sempre.'),
+      h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'ativo', checked: !!c.ativo }), h('strong', null, 'Ligar mensagens automáticas')),
+      h('fieldset', { class: 'secao', style: 'border:none;padding:0;margin:0;gap:8px' },
+        h('legend', { class: 'rotulo', style: 'margin-bottom:8px' }, 'Quais mensagens'),
+        TIPOS_MENSAGEM.map(([id, nome, quando]) => h('label', { class: 'check' },
+          h('input', { type: 'checkbox', name: id, checked: !!c[id] }),
+          h('span', null, h('span', null, nome), h('span', { class: 'ajuda', style: 'display:block' }, quando))))),
+      h('div', { class: 'grade g2' },
+        campo('Lembrete quantas horas antes', entrada({ name: 'horas', type: 'number', min: 1, max: 48, value: m.lembrete_horas ?? 1 })),
+        campo('Endereço do site', entrada({ name: 'site', type: 'url', value: m.site_url ?? '', placeholder: 'https://…' }))),
+      h('p', { class: 'ajuda' }, 'O endereço do site entra nos links das mensagens (Minha área e marcar de novo).'),
+      h('button', { type: 'submit', class: 'btn btn--escuro btn--peq' }, 'Salvar mensagens'),
+      h('div', { class: 'metricas' },
+        h('div', { class: 'metrica' }, h('span', { class: 'metrica-rotulo' }, 'Enviadas (7 dias)'), h('span', { class: 'metrica-valor' }, String(m.semana?.enviadas ?? 0))),
+        h('div', { class: 'metrica' }, h('span', { class: 'metrica-rotulo' }, 'Na fila'), h('span', { class: 'metrica-valor' }, String(m.semana?.na_fila ?? 0))),
+        h('div', { class: 'metrica' }, h('span', { class: 'metrica-rotulo' }, 'Com erro'), h('span', { class: `metrica-valor${m.semana?.erros ? ' negativo' : ''}` }, String(m.semana?.erros ?? 0)))),
+      (m.ultimas ?? []).length > 0 && h('div', { class: 'lista' }, m.ultimas.slice(0, 10).map((/** @type {any} */ x) => h('div', { class: 'linha' },
+        h('div', { class: 'linha-textos' },
+          h('span', { class: 'linha-titulo' }, `${NOME_TIPO[x.tipo] ?? x.tipo} · ${x.cliente ?? '—'}`),
+          h('span', { class: 'ajuda' }, `${fmtQuando.format(new Date(x.quando))}${x.erro && x.status !== 'enviada' ? ` · ${x.erro}` : ''}`)),
+        h('span', { class: `tag ${x.status === 'enviada' ? 'tag--ok' : x.status === 'erro' ? 'tag--erro' : x.status === 'cancelada' ? '' : 'tag--info'}` },
+          STATUS_MENSAGEM[/** @type {'pendente'} */ (x.status)] ?? x.status)))),
+    ),
+  );
+}
+
 function secaoPix() {
   const c = d.cfg;
   const chave = String(c.pix_chave ?? '');
@@ -347,7 +413,7 @@ function render() {
     h('div', { class: 'poste', 'aria-hidden': 'true' }),
     h('header', { class: 'topo', style: 'justify-content:flex-start' }, perfil.papel === 'dono' && h('a', { class: 'btn-icone', href: 'index.html', 'aria-label': 'Voltar pro início' }, icone('voltar')), h('div', { class: 'topo-textos' }, h('span', { class: 'sub' }, `Olá, ${perfil.nome}`), h('span', { class: 'titulo' }, 'Ajustes'))),
     !d ? h('main', { class: 'conteudo' }, carregando())
-      : h('main', { class: 'conteudo', style: 'gap:12px' }, secaoServicos(), secaoHorarios(), secaoFormas(), secaoPix(), secaoRegras(), secaoEquipe(), secaoLogins(),
+      : h('main', { class: 'conteudo', style: 'gap:12px' }, secaoServicos(), secaoHorarios(), secaoFormas(), secaoPix(), secaoRegras(), secaoMensagens(), secaoEquipe(), secaoLogins(),
           h('button', { type: 'button', class: 'btn btn--claro', style: 'margin-top:12px', onClick: sair }, 'Sair da conta')),
     tabbar('config', perfil),
   );

@@ -4,6 +4,7 @@
 
 create role anon nologin;
 create role authenticated nologin;
+create role service_role nologin bypassrls;
 
 create schema extensions;
 grant usage on schema extensions to public;

@@ -133,3 +133,23 @@ create function teste.pode_barbeiro(p_barbeiro uuid) returns boolean
 language sql stable security definer set search_path = public as
   $$ select pode_barbeiro(p_barbeiro) $$;
 grant execute on function teste.pode_barbeiro(uuid) to public;
+
+-- A função de envio do Supabase roda como service_role.
+create function teste.como_servico() returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claim.sub', '', true);
+  set local role service_role;
+end $$;
+
+-- Liga as mensagens automáticas direto na configuração (sem passar pela tela).
+create function teste.ligar_mensagens(p_extra jsonb default '{}') returns void
+language sql security definer set search_path = public as $$
+  update configuracoes set valor = valor || '{"ativo": true}'::jsonb || p_extra where chave = 'mensagens_automaticas';
+  update configuracoes set valor = '"https://corte.test/"' where chave = 'site_url';
+$$;
+grant execute on function teste.ligar_mensagens(jsonb) to public;
+
+create function teste.fila(p_tipo text default null) returns bigint
+language sql stable security definer set search_path = public as
+  $$ select count(*) from mensagens where status = 'pendente' and (p_tipo is null or tipo = p_tipo) $$;
+grant execute on function teste.fila(text) to public;
